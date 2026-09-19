@@ -1,4 +1,3 @@
-git status
-git add src/graphics/host_gpu/renderer/pipeline/pipelineCache.cpp Commands.txt
-git commit -m "Improve shader cache performance"
+git add .github/workflows/build.yml Commands.txt
+git commit -m "Fix Windows Clang SPIR-V build"
 git push origin main

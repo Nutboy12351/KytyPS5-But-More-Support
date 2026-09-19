@@ -100,6 +100,7 @@ jobs:
             -DKYTY_RELEASE_TAG=${{ needs.metadata.outputs.release_tag }} ^
             -DCMAKE_C_COMPILER=clang-cl ^
             -DCMAKE_CXX_COMPILER=clang-cl ^
+            -DCMAKE_CXX_FLAGS=-Wno-c++11-narrowing ^
             -DCMAKE_PREFIX_PATH="%Qt6_DIR%"
 
       - name: Build
