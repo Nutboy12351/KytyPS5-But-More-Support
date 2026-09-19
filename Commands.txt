@@ -1,0 +1,125 @@
+KytyPS5 Commands
+================
+
+Run these commands from the repository root.
+
+Important platform note:
+  A Windows computer can still have a Linux VS Code/Codespaces terminal. If your prompt contains
+  `/workspaces/` and uses `$`, you are in Linux and must use the Linux commands below. Use the
+  Windows commands only from a native Windows PowerShell or Visual Studio Developer PowerShell.
+
+Initial setup
+-------------
+
+Update all submodules:
+  git submodule update --init --recursive
+
+Linux dependencies (Ubuntu/Debian):
+  sudo apt-get install --no-install-recommends clang lld ninja-build cmake git glslang-tools qt6-base-dev libgl1-mesa-dev libx11-dev libxcursor-dev libxext-dev libxfixes-dev libxi-dev libxrandr-dev libxss-dev libxkbcommon-dev libasound2-dev libpulse-dev libudev-dev libdbus-1-dev libwayland-dev wayland-protocols
+
+If CMake says it cannot find Ninja, install it before configuring:
+  sudo apt-get install ninja-build
+
+Linux build
+-----------
+
+Configure once (replace Qt6_DIR if Qt 6 is installed elsewhere):
+  cmake -S . -B _Build/linux -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_PREFIX_PATH="$Qt6_DIR"
+
+Fast incremental build (use this most of the time):
+  cmake --build _Build/linux --target launcher --parallel
+
+Build only the emulator:
+  cmake --build _Build/linux --target kyty_emulator --parallel
+
+Build and run all tests:
+  cmake --build _Build/linux --target kyty_tests --parallel
+  ctest --test-dir _Build/linux --output-on-failure
+
+Install a runnable build:
+  cmake --install _Build/linux --prefix _Build/linux/install
+
+Reconfigure after changing CMake options:
+  cmake -S . -B _Build/linux
+
+Clean rebuild:
+  cmake --build _Build/linux --target clean
+  cmake --build _Build/linux --target launcher --parallel
+
+Windows build
+-------------
+
+Use this section only on a Windows machine. Do not use these commands in the Linux VS Code
+container: `clang-cl` and `C:/Qt/...` are Windows-specific. Run these from an x64 Native Tools
+Command Prompt or Developer PowerShell. Replace `6.x.x` with the Qt version installed under
+`C:\Qt`. This project requires the `msvc2022_64` Qt package; `mingw_64` is not compatible with
+the Windows build commands below. Install the MSVC 2022 64-bit component alongside your current
+Qt installation.
+
+Full Windows build (11 commands):
+  1. cd C:\path\to\KytyPS5-But-More-Support
+  2. git submodule update --init --recursive
+  3. cmake --version
+  4. ninja --version
+  5. cmake -S . -B _Build/windows -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DCMAKE_LINKER=lld-link -DCMAKE_PREFIX_PATH="C:/Qt/6.11.2/msvc2022_64"
+  6. cmake --build _Build/windows --target kyty_emulator --parallel
+  7. cmake --build _Build/windows --target launcher --parallel
+  8. cmake --build _Build/windows --target kyty_tests --parallel
+  9. ctest --test-dir _Build/windows --output-on-failure
+ 10. cmake --install _Build/windows --prefix _Build/windows/install
+ 11. .\_Build\windows\install\launcher.exe
+
+For later edits, use commands 7, 9, and 10 for an incremental rebuild, test, and install.
+
+One-command PowerShell build:
+  $ErrorActionPreference='Stop'; cd C:\path\to\KytyPS5-But-More-Support; git submodule update --init --recursive; cmake -S . -B _Build/windows -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang-cl -DCMAKE_CXX_COMPILER=clang-cl -DCMAKE_LINKER=lld-link -DCMAKE_PREFIX_PATH="C:/Qt/6.11.2/msvc2022_64"; cmake --build _Build/windows --target launcher kyty_tests --parallel; ctest --test-dir _Build/windows --output-on-failure; cmake --install _Build/windows --prefix _Build/windows/install; & .\_Build\windows\install\launcher.exe
+
+Build with GitHub Actions from Codespaces
+------------------------------------------
+
+The repository already contains a Windows build workflow at `.github/workflows/build.yml`.
+Pushing to `main` or `master` starts the Windows and macOS builds automatically. The workflow
+also supports manual runs from the repository's GitHub Actions page using **Run workflow**.
+
+From the Codespaces terminal, review the changes, commit them, and push:
+  git status
+  git add src/graphics/host_gpu/renderer/pipeline/pipelineCache.cpp Commands.txt
+  git commit -m "Improve shader cache performance"
+  git push origin main
+
+Open the repository on GitHub, select **Actions**, choose **Build and Release KytyPS5**, and
+open the newest run. The Windows executable is available under **Artifacts** after the run
+finishes successfully.
+
+macOS build
+-----------
+
+Configure once for x86-64:
+  cmake -S . -B _Build/macos -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_PREFIX_PATH="$Qt6_DIR"
+
+Fast incremental build:
+  cmake --build _Build/macos --target launcher --parallel
+
+Build and install:
+  cmake --install _Build/macos --prefix _Build/macos/install
+
+Formatting hooks
+----------------
+
+Install pre-commit:
+  python -m pip install pre-commit
+
+Enable the formatting hook:
+  python -m pre_commit install --install-hooks
+
+Useful Git commands
+-------------------
+
+Check changed files:
+  git status --short
+
+Show the current diff:
+  git diff
+
+Update the current branch:
+  git pull --rebase

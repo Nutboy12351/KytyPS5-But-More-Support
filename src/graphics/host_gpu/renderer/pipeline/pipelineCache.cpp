@@ -361,16 +361,13 @@ struct PipelineCache::ProgramCache {
 		input_info.stage = {.program = &permutation.program, .resources = std::move(resources)};
 		permutation.program.bindings.AdvancePushData(push_data_cursor);
 
-		std::array<size_t, static_cast<size_t>(ShaderType::Mesh) + 1> counts {};
-		for (const auto& [key, source]: programs) {
-			counts[static_cast<size_t>(key.stage)] += source.permutations.size();
-		}
+		shader_counts[static_cast<size_t>(stage)]++;
 		// Guest geometry shaders are compiled through the host mesh stage.
 		std::printf("Shaders: VS %zu | PS %zu | CS %zu | GS %zu\n",
-		            counts[static_cast<size_t>(ShaderType::Vertex)],
-		            counts[static_cast<size_t>(ShaderType::Pixel)],
-		            counts[static_cast<size_t>(ShaderType::Compute)],
-		            counts[static_cast<size_t>(ShaderType::Mesh)]);
+		            shader_counts[static_cast<size_t>(ShaderType::Vertex)],
+		            shader_counts[static_cast<size_t>(ShaderType::Pixel)],
+		            shader_counts[static_cast<size_t>(ShaderType::Compute)],
+		            shader_counts[static_cast<size_t>(ShaderType::Mesh)]);
 		return permutation.handle;
 	}
 
@@ -390,6 +387,7 @@ struct PipelineCache::ProgramCache {
 	ProgramKey                                                  lookup_key;
 	vk::Device                                                  device;
 	uint64_t                                                    next_shader_id = 0;
+	std::array<size_t, static_cast<size_t>(ShaderType::Mesh) + 1> shader_counts {};
 };
 
 PipelineCache::PipelineCache(GraphicContext& graphics)
